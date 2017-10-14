@@ -1,4 +1,5 @@
 import sqlite3
+import pandas as pd
 
 
 def make_table(db, table_name, col_types):
@@ -13,3 +14,9 @@ def make_table(db, table_name, col_types):
     cursor.execute(query)
     conn.close()
 
+
+def append_csv_to_table(db, table_name, csv_path):
+    conn = sqlite3.connect(db)
+    df = pd.read_csv(csv_path)
+    df.to_sql(table_name, conn, if_exists='append', index=False)
+    conn.close()
