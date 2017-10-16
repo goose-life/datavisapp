@@ -9,11 +9,13 @@ setuptools.setup(
     author_email="32566441+edithvee@users.noreply.github.com",
 
     description="a data visualisation app _for science_",
-    long_description=open('README.md').read(),
+    long_description=open('README.rst').read(),
 
     packages=setuptools.find_packages(),
 
-    install_requires=[],
+    install_requires=[
+        'pandas',
+    ],
 
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
