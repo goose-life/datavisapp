@@ -37,14 +37,3 @@ def test_append_csv_to_table(tmpdir):
     table_result = cursor.fetchall()
     conn.close()
     assert ('S01', 0.5, 20.0) and ('S02', 0.9, 45.0) in table_result
-
-
-
-# def test_insert():
-#     conn = sqlite3.connect("test_db")
-#     cursor = conn.cursor()
-#     cursor.execute('select * from metadata')
-#     results = cursor.fetchall()
-#     assert results == ""
-#     conn.close()
-#
