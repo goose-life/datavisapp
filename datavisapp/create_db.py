@@ -1,3 +1,4 @@
+import click
 import sqlite3
 import pandas as pd
 
@@ -44,3 +45,27 @@ def get_tables_list(db_name=':memory:'):
         c.execute("SELECT name FROM sqlite_master WHERE type='table';")
         result = list(chain.from_iterable(c.fetchall()))
         return result
+
+
+@click.group()
+def cli():
+    pass
+
+
+@cli.command()
+@click.option('--database-name', '-n', default=':memory:', help='Project name for which the database is to be created.')
+def create(database_name):
+    """Create a new database for a project"""
+    click.echo(f'Creating a new database for project "{database_name}"')
+
+
+@cli.command()
+@click.option('--database-name', '-n', required=True, help='Name of the database to query.')
+@click.option('--sql-query', '-s', required=True, help='SQL query to perform on database.')
+def query(database_name, sql_query):
+    """Apply an SQL query to a database"""
+    click.echo(f'Applying "{sql_query}" to "{database_name}"')
+
+
+if __name__ == '__main__':
+    cli()

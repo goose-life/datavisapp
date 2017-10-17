@@ -21,4 +21,11 @@ setuptools.setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
     ],
+
+    entry_points={
+        'console_scripts': [
+            'create_db = datavisapp.create_db:cli',
+        ],
+    },
+
 )
