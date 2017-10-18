@@ -1,7 +1,7 @@
 import sqlite3
 from pathlib import Path
 from click.testing import CliRunner
-from datavisapp.create_db import make_table, append_csv_to_table, get_tables_list, main
+from datavisapp.create_db import make_table, append_csv_to_table, main
 
 
 def test_make_table(tmpdir):
@@ -42,19 +42,6 @@ def test_append_csv_to_table(tmpdir):
         table_result = c.fetchall()
 
     assert ('S01', 0.5, 20.0) and ('S02', 0.9, 45.0) in table_result
-
-
-def test_get_tables_list(tmpdir):
-    db = str(tmpdir.join('test.db'))
-
-    col_types = [
-        ('DataSet', 'str'),
-        ('Date', 'str'),
-    ]
-    make_table('metadata', col_types, db_name=db)
-    tables_list = get_tables_list(db)
-
-    assert 'metadata' in tables_list
 
 
 def test_create_db(tmpdir):

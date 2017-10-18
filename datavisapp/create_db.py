@@ -6,6 +6,8 @@ import pandas as pd
 from collections import OrderedDict
 from itertools import chain
 
+from .db_operations import get_tables_list
+
 
 def make_table(table_name, col_types, db_name=':memory:'):
     """
@@ -37,29 +39,16 @@ def append_csv_to_table(table_name, csv_path, db_name=':memory:'):
         df.to_sql(table_name, conn, if_exists='append', index=False)
 
 
-def get_tables_list(db_name=':memory:'):
-    """
-    Return a list of all the tables in a database.
-    """
-    conn = sqlite3.connect(db_name)
-
-    with conn:
-        c = conn.cursor()
-        c.execute("SELECT name FROM sqlite_master WHERE type='table';")
-        result = list(chain.from_iterable(c.fetchall()))
-        return result
-
-
 def create_db(db, schema_json):
-     """Create a database according to schema in JSON format."""
-     with open(schema_json) as of:
-         schema = json.load(of, object_pairs_hook=OrderedDict)
-         # OrderedDict so that tables are created in the order specified,
-         # allowing foreign keys to reference previously defined tables
+    """Create a database according to schema in JSON format."""
+    with open(schema_json) as of:
+        schema = json.load(of, object_pairs_hook=OrderedDict)
+        # OrderedDict so that tables are created in the order specified,
+        # allowing foreign keys to reference previously defined tables
 
-     for table_name, columns in schema.items():
-         col_types = columns.items()  # dict -> tuple
-         make_table(db, table_name, col_types)
+    for table_name, columns in schema.items():
+        col_types = columns.items()  # dict -> tuple
+        make_table(table_name, col_types, db_name=db)
 
 
 @click.command()
@@ -71,3 +60,4 @@ def main(db_path, schema_json):
     {"<table name>": {"<field name>": "<field type> <constraints>"}}
     """
     create_db(db_path, schema_json)
+    print(get_tables_list(db_path))
