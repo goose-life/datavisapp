@@ -62,13 +62,12 @@ def create_db(db, schema_json):
          make_table(db, table_name, col_types)
 
 
- @click.command()
- @click.argument('db_path')
- @click.argument('schema_json')
- def main(db_path, schema_json):
-     """Create a database from a schema and populate it with CSV/JSON data.
-
+@click.command()
+@click.argument('db_path')
+@click.argument('schema_json')
+def main(db_path, schema_json):
+    """Create a database from a schema and populate it with CSV/JSON data.
      The schema is supplied as a JSON file with the following structure:
-     {"<table name>": {"<field name>": "<field type> <constraints>"}}
-     """
-     create_db(db_path, schema_json)
+    {"<table name>": {"<field name>": "<field type> <constraints>"}}
+    """
+    create_db(db_path, schema_json)
