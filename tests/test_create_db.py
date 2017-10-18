@@ -1,6 +1,7 @@
 import sqlite3
-
-from datavisapp.create_db import make_table, append_csv_to_table, get_tables_list
+from pathlib import Path
+from click.testing import CliRunner
+from datavisapp.create_db import make_table, append_csv_to_table, get_tables_list, main
 
 
 def test_make_table(tmpdir):
@@ -56,11 +57,20 @@ def test_get_tables_list(tmpdir):
     assert 'metadata' in tables_list
 
 
-# def test_insert():
-#     conn = sqlite3.connect("test_db")
-#     cursor = conn.cursor()
-#     cursor.execute('select * from metadata')
-#     results = cursor.fetchall()
-#     assert results == ""
-#     conn.close()
-#
+def test_create_db(tmpdir):
+     db = str(tmpdir.join('test.db'))
+     schema_json = str(Path('tests', 'schema.json'))
+
+     runner = CliRunner()
+     result = runner.invoke(main, [db, schema_json])
+     assert result.exit_code == 0
+
+     with sqlite3.connect(db) as conn:
+         cursor = conn.cursor()
+         cursor.execute("select name from sqlite_master where type = 'table'")
+         existing_tables = cursor.fetchall()
+
+     assert existing_tables == [
+         ('metadata',),
+         ('metrics',),
+     ]
