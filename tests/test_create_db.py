@@ -1,7 +1,9 @@
 import sqlite3
 from pathlib import Path
 
-from datavisapp.create_db import make_table, append_csv_to_table
+from click.testing import CliRunner
+
+from datavisapp.create_db import make_table, append_csv_to_table, main
 
 
 def test_make_table(tmpdir):
@@ -45,4 +47,23 @@ def test_append_csv_to_table(tmpdir):
         ('S02', 0.9, 45.0),
         ('S01', 0.7, 10.0),
         ('S02', 0.9, 20.0),
+    ]
+
+
+def test_create_db(tmpdir):
+    db = str(tmpdir.join('test.db'))
+    schema_json = str(Path('tests', 'schema.json'))
+
+    runner = CliRunner()
+    result = runner.invoke(main, [db, schema_json])
+    assert result.exit_code == 0
+
+    with sqlite3.connect(db) as conn:
+        cursor = conn.cursor()
+        cursor.execute("select name from sqlite_master where type = 'table'")
+        existing_tables = cursor.fetchall()
+
+    assert existing_tables == [
+        ('metadata',),
+        ('metrics',),
     ]

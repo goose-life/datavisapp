@@ -9,6 +9,7 @@ Usage
 =====
 
 The module ``create_db.py`` contains functions for feeding data into a SQLite database.
+A command-line interface is provided via the command ``create-db``.
 
 
 Installation

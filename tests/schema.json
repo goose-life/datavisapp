@@ -1,0 +1,13 @@
+{
+  "metadata": {
+    "DataSet": "TEXT PRIMARY KEY",
+    "Date": "TEXT"
+  },
+  "metrics": {
+    "Sample": "TEXT",
+    "MetricA": "FLOAT",
+    "MetricB": "FLOAT",
+    "DataSet": "TEXT",
+    "FOREIGN KEY(DataSet)": "REFERENCES metadata(DataSet)"
+  }
+}
