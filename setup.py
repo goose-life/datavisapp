@@ -14,6 +14,7 @@ setuptools.setup(
     packages=['datavisapp'],
 
     install_requires=[
+        'click',
         'pandas',
     ],
 
@@ -23,4 +24,9 @@ setuptools.setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
     ],
+    entry_points={
+        'console_scripts': [
+            'create-db = datavisapp.create_db:main',
+        ],
+    },
 )
