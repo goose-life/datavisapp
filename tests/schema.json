@@ -11,4 +11,3 @@
     "FOREIGN KEY(DataSet)": "REFERENCES metadata(DataSet)"
   }
 }
-

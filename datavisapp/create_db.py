@@ -56,8 +56,8 @@ def create_db(db, schema_json):
 @click.argument('schema_json')
 def main(db_path, schema_json):
     """Create a database from a schema and populate it with CSV/JSON data.
-     The schema is supplied as a JSON file with the following structure:
+
+    The schema is supplied as a JSON file with the following structure:
     {"<table name>": {"<field name>": "<field type> <constraints>"}}
     """
     create_db(db_path, schema_json)
-    print(get_tables_list(db_path))

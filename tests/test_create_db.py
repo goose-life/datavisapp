@@ -1,6 +1,8 @@
 import sqlite3
 from pathlib import Path
+
 from click.testing import CliRunner
+
 from datavisapp.create_db import make_table, append_csv_to_table, main
 
 
@@ -31,26 +33,33 @@ def test_append_csv_to_table(tmpdir):
         ('MetricA', 'REAL'),
         ('MetricB', 'REAL'),
     ]
-    make_table('experiment1_metrics', col_types, db_name=db)
-    append_csv_to_table('experiment1_metrics', 'tests/data/DatasetX.csv', db_name=db)
+    
+    make_table(db, 'experiment1_metrics', col_types)
+    csv_x = Path('tests', 'data', 'DatasetX.csv')
+    csv_y = Path('tests', 'data', 'DatasetY.csv')
+    append_csv_to_table(db, 'experiment1_metrics', csv_x)
+    append_csv_to_table(db, 'experiment1_metrics', csv_y)
 
     conn = sqlite3.connect(db)
-    c = conn.cursor()
+    cursor = conn.cursor()
+    cursor.execute("select * from experiment1_metrics")
+    table_result = cursor.fetchall()
+    conn.close()
+    assert table_result == [
+        ('S01', 0.5, 20.0),
+        ('S02', 0.9, 45.0),
+        ('S01', 0.7, 10.0),
+        ('S02', 0.9, 20.0),
+    ]
 
-    with conn:
-        c.execute("select * from experiment1_metrics")
-        table_result = c.fetchall()
-
-    assert ('S01', 0.5, 20.0) and ('S02', 0.9, 45.0) in table_result
-
-
+    
 def test_create_db(tmpdir):
-     db = str(tmpdir.join('test.db'))
-     schema_json = str(Path('tests', 'schema.json'))
+    db = str(tmpdir.join('test.db'))
+    schema_json = str(Path('tests', 'schema.json'))
 
-     runner = CliRunner()
-     result = runner.invoke(main, [db, schema_json])
-     assert result.exit_code == 0
+    runner = CliRunner()
+    result = runner.invoke(main, [db, schema_json])
+    assert result.exit_code == 0
 
      with sqlite3.connect(db) as conn:
          cursor = conn.cursor()
