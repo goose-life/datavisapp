@@ -13,7 +13,7 @@ def test_make_table(tmpdir):
         ('DataSet', 'TEXT'),
         ('Date', 'TEXT'),
     ]
-    make_table('metadata', col_types, db_name=db)
+    make_table('metadata', col_types, db)
 
     conn = sqlite3.connect(db)
     c = conn.cursor()
@@ -34,11 +34,11 @@ def test_append_csv_to_table(tmpdir):
         ('MetricB', 'REAL'),
     ]
     
-    make_table(db, 'experiment1_metrics', col_types)
+    make_table('experiment1_metrics', col_types, db)
     csv_x = Path('tests', 'data', 'DatasetX.csv')
     csv_y = Path('tests', 'data', 'DatasetY.csv')
-    append_csv_to_table(db, 'experiment1_metrics', csv_x)
-    append_csv_to_table(db, 'experiment1_metrics', csv_y)
+    append_csv_to_table('experiment1_metrics', csv_x, db)
+    append_csv_to_table('experiment1_metrics', csv_y, db)
 
     conn = sqlite3.connect(db)
     cursor = conn.cursor()
@@ -61,12 +61,12 @@ def test_create_db(tmpdir):
     result = runner.invoke(main, [db, schema_json])
     assert result.exit_code == 0
 
-     with sqlite3.connect(db) as conn:
-         cursor = conn.cursor()
-         cursor.execute("select name from sqlite_master where type = 'table'")
-         existing_tables = cursor.fetchall()
+    with sqlite3.connect(db) as conn:
+        cursor = conn.cursor()
+        cursor.execute("select name from sqlite_master where type = 'table'")
+        existing_tables = cursor.fetchall()
 
-     assert existing_tables == [
-         ('metadata',),
-         ('metrics',),
-     ]
+    assert existing_tables == [
+        ('metadata',),
+        ('metrics',),
+    ]

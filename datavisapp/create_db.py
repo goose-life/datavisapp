@@ -4,9 +4,6 @@ import click as click
 import pandas as pd
 
 from collections import OrderedDict
-from itertools import chain
-
-from .db_operations import get_tables_list
 
 
 def make_table(table_name, col_types, db_name=':memory:'):
@@ -48,7 +45,7 @@ def create_db(db, schema_json):
 
     for table_name, columns in schema.items():
         col_types = columns.items()  # dict -> tuple
-        make_table(table_name, col_types, db_name=db)
+        make_table(table_name, col_types, db)
 
 
 @click.command()
