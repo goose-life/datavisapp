@@ -1,14 +1,15 @@
 import json
 import sqlite3
-from collections import OrderedDict
-
 import click as click
 import pandas as pd
 
+from collections import OrderedDict
 
-def make_table(db, table_name, col_types):
-    conn = sqlite3.connect(db)
-    cursor = conn.cursor()
+
+def make_table(table_name, col_types, conn):
+    """
+    Create a new table in a database using column names and types supplied.
+    """
     columns = []
     for col_name, col_type in col_types:
         col_str = f'{col_name} {col_type}'
@@ -16,18 +17,22 @@ def make_table(db, table_name, col_types):
     columns = ', '.join(columns)
     query = f'''create table {table_name} ({columns})'''
     click.echo(f'Creating table {table_name} with SQL command:\n{query}', err=True)
-    cursor.execute(query)
-    conn.close()
+
+    with conn:
+        c = conn.cursor()
+        c.execute(query)
 
 
-def append_csv_to_table(db, table_name, csv_path):
-    conn = sqlite3.connect(db)
-    df = pd.read_csv(csv_path)
-    df.to_sql(table_name, conn, if_exists='append', index=False)
-    conn.close()
+def append_csv_to_table(table_name, csv_path, conn):
+    """
+    Append the data from a csv file to a table in the database.
+    """
+    with conn:
+        df = pd.read_csv(csv_path)
+        df.to_sql(table_name, conn, if_exists='append', index=False)
 
 
-def create_db(db, schema_json):
+def create_db(conn, schema_json):
     """Create a database according to schema in JSON format."""
     with open(schema_json) as of:
         schema = json.load(of, object_pairs_hook=OrderedDict)
@@ -36,7 +41,7 @@ def create_db(db, schema_json):
 
     for table_name, columns in schema.items():
         col_types = columns.items()  # dict -> tuple
-        make_table(db, table_name, col_types)
+        make_table(table_name, col_types, conn)
 
 
 @click.command()
@@ -48,4 +53,5 @@ def main(db_path, schema_json):
     The schema is supplied as a JSON file with the following structure:
     {"<table name>": {"<field name>": "<field type> <constraints>"}}
     """
-    create_db(db_path, schema_json)
+    conn = sqlite3.connect(db_path)
+    create_db(conn, schema_json)
