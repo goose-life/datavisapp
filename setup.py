@@ -16,6 +16,7 @@ setuptools.setup(
     install_requires=[
         'click',
         'pandas',
+        'records',
     ],
 
     classifiers=[
