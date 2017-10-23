@@ -40,7 +40,7 @@ def create_db(db, schema_json):
         # allowing foreign keys to reference previously defined tables
 
     for table_name, columns in schema.items():
-        col_types = columns.items()  # dict -> tuple
+        col_types = columns.items()  # dict -> Iterable[Tuple[str, str]]
         make_table(db, table_name, col_types)
 
 

@@ -1,0 +1,20 @@
+{
+  "Analyses": {
+    "AnalysisID": "TEXT PRIMARY KEY",
+    "AnalysisDate": "TEXT"
+  },
+  "Samples": {
+    "SampleID": "INTEGER PRIMARY KEY AUTOINCREMENT",
+    "SampleName": "TEXT",
+    "SampleType": "TEXT",
+    "AnalysisID": "TEXT",
+    "FOREIGN KEY(AnalysisID)": "REFERENCES Analyses(AnalysisID)"
+  },
+  "Metrics": {
+    "SampleID": "TEXT",
+    "Metric1": "REAL",
+    "Metric2": "REAL",
+    "Metric3": "REAL",
+    "FOREIGN KEY(SampleID)": "REFERENCES Samples(SampleID)"
+  }
+}
