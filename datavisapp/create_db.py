@@ -24,25 +24,23 @@ def make_table(db_path, table_name, col_types):
     db.query(query)
 
 
-def append_csv_to_table(db, table_name, csv_path):
-    """Append data in CSV file to table in database.
-
-    The CSV header must correspond to field names in the given table.
+def insert_into_db(db, table, data: list):
+    """Append data to database table with matching field names.
 
     Args:
         db (str): path to the SQLite database
-        table_name (str): name of the table in which to insert the data
-        csv_path (Union[str, Path]): path to the CSV file containing the data to insert
+        table (str): name of the table in which to insert the data
+        data (List[Mapping]): a list of records
 
     Returns: None
     """
-    df = pd.read_csv(csv_path)
-    fields = ', '.join(df.columns)
-    placeholders = ', '.join([':' + col for col in df.columns])
-    query = f'INSERT INTO {table_name} ({fields}) VALUES({placeholders})'
+    fields = data[0].keys()
+    field_list = ', '.join(fields)
+    placeholders = ', '.join([':' + field for field in fields])
+    query = f'INSERT INTO {table} ({field_list}) VALUES({placeholders})'
 
     with records.Database(f'sqlite:///{db}') as db:
-        for record in df.to_dict(orient='records'):
+        for record in data:
             db.query(query, **record)
 
 
