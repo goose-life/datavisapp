@@ -1,6 +1,7 @@
 import sqlite3
 from pathlib import Path
 
+import records
 from click.testing import CliRunner
 
 from datavisapp.create_db import make_table, append_csv_to_table, main
@@ -15,12 +16,10 @@ def test_make_table(tmpdir):
     ]
     make_table(db, 'metadata', col_types)
 
-    conn = sqlite3.connect(db)
-    cursor = conn.cursor()
-    cursor.execute("select name from sqlite_master where type = 'table'")
-    existing_tables = cursor.fetchall()
-    conn.close()
-    assert ('metadata',) in existing_tables
+    with records.Database(f'sqlite:///{db}') as db:
+        existing_tables = db.get_table_names()
+
+    assert existing_tables == ['metadata']
 
 
 def test_append_csv_to_table(tmpdir):
