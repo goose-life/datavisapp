@@ -26,9 +26,9 @@ def test_append_csv_to_table(tmpdir):
     db = str(tmpdir.join('test.db'))
 
     col_types = [
-        ('Sample', 'str'),
-        ('MetricA', 'float'),
-        ('MetricB', 'float'),
+        ('Sample', 'TEXT'),
+        ('MetricA', 'REAL'),
+        ('MetricB', 'REAL'),
     ]
     make_table(db, 'experiment1_metrics', col_types)
     csv_x = Path('tests', 'data', 'DatasetX.csv')
@@ -36,12 +36,11 @@ def test_append_csv_to_table(tmpdir):
     append_csv_to_table(db, 'experiment1_metrics', csv_x)
     append_csv_to_table(db, 'experiment1_metrics', csv_y)
 
-    conn = sqlite3.connect(db)
-    cursor = conn.cursor()
-    cursor.execute("select * from experiment1_metrics")
-    table_result = cursor.fetchall()
-    conn.close()
-    assert table_result == [
+    with records.Database(f'sqlite:///{db}') as db:
+        table_result = db.query('SELECT * FROM experiment1_metrics', fetchall=True)
+
+    row_values = [row.values() for row in table_result]
+    assert row_values == [
         ('S01', 0.5, 20.0),
         ('S02', 0.9, 45.0),
         ('S01', 0.7, 10.0),
