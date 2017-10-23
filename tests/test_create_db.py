@@ -51,18 +51,13 @@ def test_append_csv_to_table(tmpdir):
 
 def test_create_db(tmpdir):
     db = str(tmpdir.join('test.db'))
-    schema_json = str(Path('tests', 'schema.json'))
+    schema_json = str(Path('datavisapp', 'db_schema.json'))
 
     runner = CliRunner()
     result = runner.invoke(main, [db, schema_json])
     assert result.exit_code == 0
 
-    with sqlite3.connect(db) as conn:
-        cursor = conn.cursor()
-        cursor.execute("select name from sqlite_master where type = 'table'")
-        existing_tables = cursor.fetchall()
+    with records.Database(f'sqlite:///{db}') as db:
+        existing_tables = db.get_table_names()
 
-    assert existing_tables == [
-        ('metadata',),
-        ('metrics',),
-    ]
+    assert set(existing_tables).issuperset({'Analyses', 'Samples', 'Metrics'})
