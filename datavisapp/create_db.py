@@ -1,5 +1,4 @@
 import json
-import sqlite3
 from collections import OrderedDict
 
 import click
@@ -13,7 +12,7 @@ def make_table(db_path, table_name, col_types):
     If the database does not already exist then one will be created.
 
     Args:
-        db (str): path to the SQLite database.
+        db_path (str): path to the SQLite database.
         table_name (str): name of the table to be created.
         col_types (List[Tuple[str, str]]): column names and types to be used in the table.
 
@@ -26,10 +25,25 @@ def make_table(db_path, table_name, col_types):
 
 
 def append_csv_to_table(db, table_name, csv_path):
-    conn = sqlite3.connect(db)
+    """Append data in CSV file to table in database.
+
+    The CSV header must correspond to field names in the given table.
+
+    Args:
+        db (str): path to the SQLite database
+        table_name (str): name of the table in which to insert the data
+        csv_path (Union[str, Path]): path to the CSV file containing the data to insert
+
+    Returns: None
+    """
     df = pd.read_csv(csv_path)
-    df.to_sql(table_name, conn, if_exists='append', index=False)
-    conn.close()
+    fields = ', '.join(df.columns)
+    placeholders = ', '.join([':' + col for col in df.columns])
+    query = f'INSERT INTO {table_name} ({fields}) VALUES({placeholders})'
+
+    with records.Database(f'sqlite:///{db}') as db:
+        for record in df.to_dict(orient='records'):
+            db.query(query, **record)
 
 
 def create_db(db, schema_json):
