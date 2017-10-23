@@ -102,14 +102,19 @@ def test_append_csv_to_table(tmpdir):
 
 
 def test_create_db(tmpdir):
-    db = str(tmpdir.join('test.db'))
-    schema_json = str(Path('datavisapp', 'db_schema.json'))
+    db_path = str(tmpdir.join('test.db'))
+    metadata_json = str(Path('tests', 'data', 'DatasetX.json'))
+    results_csv = str(Path('tests', 'data', 'DatasetX.csv'))
 
     runner = CliRunner()
-    result = runner.invoke(main, [db, schema_json])
+    result = runner.invoke(main, [metadata_json, results_csv, db_path])
     assert result.exit_code == 0
 
-    with records.Database(f'sqlite:///{db}') as db:
+    query = 'SELECT * FROM Metrics JOIN Samples JOIN Analyses'
+
+    with records.Database(f'sqlite:///{db_path}') as db:
         existing_tables = db.get_table_names()
+        data = db.query(query, fetchall=True)
 
     assert set(existing_tables).issuperset({'Analyses', 'Samples', 'Metrics'})
+    assert [row.values() for row in data] == []

@@ -1,4 +1,16 @@
 {
-  "Name": "DatasetX",
-  "AnalysisDate": "2017-08-20"
+  "Analysis": {
+    "AnalysisID": "DatasetX",
+    "AnalysisDate": "2017-08-20"
+  },
+  "Samples": [
+    {
+      "SampleName": "S01",
+      "SampleType": "Reference"
+    },
+    {
+      "SampleName": "S02",
+      "SampleType": "Test"
+    }
+  ]
 }
