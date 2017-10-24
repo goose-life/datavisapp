@@ -3,7 +3,7 @@ from pathlib import Path
 import pandas as pd
 import records
 from click.testing import CliRunner
-from datavisapp.create_db import make_table, insert_into_db, main
+from datavisapp.create_db import make_table, insert_into_db, create_db, main
 
 
 def test_make_table(tmpdir):
@@ -78,43 +78,41 @@ def test_append_csv_to_table(tmpdir):
 
     col_types = [
         ('Sample', 'TEXT'),
-        ('MetricA', 'REAL'),
-        ('MetricB', 'REAL'),
+        ('Metric1', 'REAL'),
+        ('Metric2', 'REAL'),
+        ('Metric3', 'REAL'),
     ]
     make_table(db, 'experiment1_metrics', col_types)
     csv_x = Path('tests', 'data', 'DatasetX.csv')
-    csv_y = Path('tests', 'data', 'DatasetY.csv')
+    csv_y = Path('tests', 'data', 'DatasetY.csv')  # test data with fields in a different order
+    csv_z = Path('tests', 'data', 'DatasetZ.csv')  # test data which lacks one field
     data_x = pd.read_csv(csv_x)
     data_y = pd.read_csv(csv_y)
+    data_z = pd.read_csv(csv_z)
     insert_into_db(db, 'experiment1_metrics', data_x.to_dict('records'))
     insert_into_db(db, 'experiment1_metrics', data_y.to_dict('records'))
+    insert_into_db(db, 'experiment1_metrics', data_z.to_dict('records'))
 
     with records.Database(f'sqlite:///{db}') as db:
         table_result = db.query('SELECT * FROM experiment1_metrics', fetchall=True)
 
     row_values = [row.values() for row in table_result]
     assert row_values == [
-        ('S01', 0.5, 20.0),
-        ('S02', 0.9, 45.0),
-        ('S01', 0.7, 10.0),
-        ('S02', 0.9, 20.0),
+        ('S01', 0.5, 20.0, 8.7),
+        ('S02', 0.9, 45.0, 10.9),
+        ('S01', 0.7, 10.0, 6.5),
+        ('S02', 0.9, 20.0, 7.2),
+        ('S01', 1, 0.4, None),
+        ('S02', 2, 0.8, None),
     ]
 
 
 def test_create_db(tmpdir):
     db_path = str(tmpdir.join('test.db'))
-    metadata_json = str(Path('tests', 'data', 'DatasetX.json'))
-    results_csv = str(Path('tests', 'data', 'DatasetX.csv'))
-
-    runner = CliRunner()
-    result = runner.invoke(main, [metadata_json, results_csv, db_path])
-    assert result.exit_code == 0
-
-    query = 'SELECT * FROM Metrics JOIN Samples JOIN Analyses'
+    schema_json = str(Path('tests', 'data', 'db_schema.json'))
+    create_db(db_path, schema_json)
 
     with records.Database(f'sqlite:///{db_path}') as db:
         existing_tables = db.get_table_names()
-        data = db.query(query, fetchall=True)
 
     assert set(existing_tables).issuperset({'Analyses', 'Samples', 'Metrics'})
-    assert [row.values() for row in data] == []
