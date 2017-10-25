@@ -1,4 +1,6 @@
 import json
+import sqlite3
+import sqlalchemy
 from collections import OrderedDict
 
 import click
@@ -36,16 +38,22 @@ def insert_into_db(db, table, data: list):
         table (str): name of the table in which to insert the data
         data (List[Mapping]): a list of records
 
-    Returns: None
+    Returns (List): list of row ids inserted into the table (useful for setting foreign keys)
     """
     fields = data[0].keys()
     field_list = ', '.join(fields)
     placeholders = ', '.join([':' + field for field in fields])
     query = f'INSERT INTO {table} ({field_list}) VALUES({placeholders})'
+    last_row_ids = []
 
     with records.Database(f'sqlite:///{db}') as db:
         for record in data:
             db.query(query, **record)
+            last_row_id = db.query(f'SELECT last_insert_rowid() AS id FROM {table}')  # returns last id inserted into {table}
+            last_row_id = last_row_id[0]["id"]  # RecordCollection -> Record -> Integer
+            last_row_ids.append(last_row_id)
+
+    return last_row_ids
 
 
 def add_data_to_db(db, json_path, csv_path):
@@ -65,9 +73,16 @@ def add_data_to_db(db, json_path, csv_path):
     insert_into_db(db, 'Analyses', [analysis])
 
     samples = json_data.get('Samples', [])
-    insert_into_db(db, 'Samples', samples)
+    for record in samples:
+        record.update({"AnalysisID": analysis['AnalysisID']})
+
+    sample_ids = insert_into_db(db, 'Samples', samples)
+    sample_names = [sample['SampleName'] for sample in samples]
+    sample_id_map = {sample: id for sample, id in zip(sample_names, sample_ids)}
 
     csv_data = pd.read_csv(csv_path)
+    csv_data['SampleName'].replace(sample_id_map, inplace=True)
+    csv_data = csv_data.rename(columns={'SampleName': 'SampleID'})
     insert_into_db(db, 'Metrics', csv_data.to_dict('records'))
 
 
